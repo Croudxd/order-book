@@ -46,7 +46,7 @@ class Order
 
     private:
         Order_type type;
-        size_t price;
+        long price;
         size_t size;
         size_t ID;
 

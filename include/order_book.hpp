@@ -1,9 +1,12 @@
 #pragma once
 #include <cstddef>
 #include <iostream>
+#include <vector>
 #include <list>
 #include <map>
+
 #include "order.hpp"
+#include "trade.hpp"
 
 
 class Order_book
@@ -18,16 +21,17 @@ class Order_book
 
         void add_order (Order order)
         {
+            (order.type == 0) ? order.price *= -1 : order.price;
             bool matched = check_match(order);
 
             if (matched == true)
             {
-                execute();
+                execute(std::move(order));
                 return;
             }
-
             auto [ it, inserted ] = lookup[order.type]->try_emplace(order.price);
             it->second.push_back(std::move(order));
+            return;
         }
 
         bool check_match(Order order)
@@ -46,22 +50,60 @@ class Order_book
             }
             if (order.type == Order_type::buy)
             {
-                match = order.price >= it->first ;
+                match = order.price*-1 >= it->first ;
             }
-
             return match;
         }
 
         void cancel_order () { }
 
+        std::vector<Trade> get_trade_history() { return this->trade_history; }
+
     private:
-        void execute ( )
+        void execute (Order order)
         {
-            //reduce quantity
+            size_t s = order.size;
+            if (lookup[(order.type == 1) ? 0 : 1]->empty() )
+            {
+                return;
+            }
+            if (lookup[(order.type == 1) ? 0 : 1]->begin()->second.empty())
+            {
+                return;
+            }
+            size_t si = lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->size;
+
+            while (lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->size != 0 && order.size != 0)
+            {
+                lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->size--;
+                order.size--;
+            }
+            if (lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->size == 0 && order.size == 0)
+            {
+
+                long price;
+                (order.type == 0) ? price  = order.price* -1 : price = order.price;
+                lookup[(order.type == 1) ? 0 : 1]->begin()->second.pop_front();
+                trade_history.emplace_back(101 /** add time here later*/,s, price, order.type);
+                return;
+            }
+            if (lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->size == 0)
+            {
+                long price;
+                (order.type == 0) ? price  = order.price* -1 : price = order.price;
+                lookup[(order.type == 1) ? 0 : 1]->begin()->second.pop_front();
+                trade_history.emplace_back(101 /** add time here later*/, si, price, lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->type);
+                add_order(order);
+            } if ( order.size == 0)
+            {
+                trade_history.emplace_back(101 /** add time here later*/, s, lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->price, order.type);
+                return;
+            }
         }
 
-        std::map<size_t, std::list<Order>> bids;
-        std::map<size_t, std::list<Order>> asks;
-        std::map<size_t, std::list<Order>>* lookup[2];
+        std::map<long, std::list<Order>> bids;
+        std::map<long, std::list<Order>> asks;
+        std::map<long, std::list<Order>>* lookup[2];
+        std::vector<Trade> trade_history;
 
 };

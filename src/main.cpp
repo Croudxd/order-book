@@ -19,8 +19,10 @@
 
 #include "order.hpp"
 #include "order_book.hpp"
+#include <cstddef>
 #include <vector>
-
+#include <cstdlib> 
+#include <ctime> 
 
 
 int main ()
@@ -29,10 +31,16 @@ int main ()
 
     std::vector<Order> test_orders;
 
-    test_orders.emplace_back(Order_type::sell, 100.0f, 10, 1);
-    test_orders.emplace_back(Order_type::sell, 101.0f, 20, 2);
-    test_orders.emplace_back(Order_type::buy, 102.0f, 5, 3);
-    test_orders.emplace_back(Order_type::buy, 99.0f, 10, 4);
+    std::srand(std::time(nullptr)); 
+
+    for (int i = 0; i < 100; ++i) 
+    {
+        Order_type type = (std::rand() % 2 == 0) ? Order_type::buy : Order_type::sell;
+        size_t price = 95 + (std::rand() % 11); 
+        size_t quantity = 1 + (std::rand() % 50);
+        size_t id = i + 1;
+        test_orders.emplace_back(type, price, quantity, id);
+    }
 
     std::cout << "--- STARTING TRADING ENGINE ---" << std::endl;
 
@@ -42,6 +50,13 @@ int main ()
     }
 
     std::cout << "\n--- END OF TRADING DAY ---" << std::endl;
+
+    for (auto& trade : book.get_trade_history())
+    {
+        std::string type;
+        ( trade.type > 0) ? type="sell" : type="buy";
+        std::cout << "Type: "<< type << " Price: "<< trade.price << " Size:"<< trade.size << std::endl;
+    }
 
     return 0;
 }

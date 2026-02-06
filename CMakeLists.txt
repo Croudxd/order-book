@@ -9,7 +9,8 @@ include_directories(include)
 #enable_testing()
 
 add_executable(order-book src/main.cpp)
+add_executable(order-book-test test/test.cpp)
 
 
 #TEST:
-#add_test(NAME test_name COMMAND executable)
+#add_test(NAME order-book-test COMMAND order-book-test)
