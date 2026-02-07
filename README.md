@@ -3,15 +3,15 @@
 A low-latency limit order book and matching engine implemented in C++20.
 Designed to handle high-throughput trading scenarios using standard STL containers optimized for cache locality and branchless execution.
 
-## 🚀 Performance Benchmarks
+## 🚀 Performance Benchmarks (Release)
 Tested on a dataset of **100 Million Orders** (Ryzen 9 5000/16GB ram):
 
-| Metric | Result |
+| Metric | Performance |
 | :--- | :--- |
-| **Throughput** | **2,082,294 orders/sec** |
-| **Latency** | **480 nanoseconds** (avg per order) |
-| **Volume** | 100,000,000 orders processed in 48s |
-| **Match Rate** | 81% (81M trades executed) |
+| **Throughput** | **12,496,097 orders/sec** |
+| **Latency** | **80 nanoseconds** (avg) |
+| **Execution Time** | 8.00 seconds (100M orders) |
+| **Reliability** | 100% Deterministic match rate (81M trades) |
 
 ## 🛠️ Technical Implementation
 * **Data Structure:** Hybrid approach using `std::map` (Red-Black Tree) for price levels and `std::list` for O(1) insertions/deletions.
