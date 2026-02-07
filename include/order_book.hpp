@@ -4,6 +4,7 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <unordered_map>
 
 #include "order.hpp"
 #include "trade.hpp"
@@ -47,8 +48,12 @@ class Order_book
             {
                 auto [ it, inserted ] = lookup[order.type]->try_emplace(order.price);
                 it->second.push_back(std::move(order));
+                auto list_it = std::prev(it->second.end());
+
+                order_lookup[list_it->ID] = Order_entry{ list_it, (order.type == Order_type::buy)};
                 return;
             }
+
         }
 
         bool check_match(Order order)
@@ -73,7 +78,18 @@ class Order_book
             }
             return match;
         }
-        void cancel_order () { }
+        //Can now write this.
+        void cancel_order (size_t ID)
+        {
+            auto it = order_lookup[ID];
+            // Get the data
+            // Get what map its fromo (bid or asks)
+            // safely check if a list exists using the data we took out (price)
+            // erase the Order object from list using iterator.
+            // Check if price list is empty, if it is remove it.
+            //
+            // erase it from order_lookup 
+        }
 
         std::vector<Trade> get_trade_history() { return this->trade_history; }
 
@@ -105,10 +121,16 @@ class Order_book
                 }
             }
         }
+        struct Order_entry
+        {
+            std::list<Order>::iterator location;
+            bool is_buy;
+        };
 
         std::map<long, std::list<Order>> bids;
         std::map<long, std::list<Order>> asks;
         std::map<long, std::list<Order>>* lookup[2];
         std::vector<Trade> trade_history;
+        std::unordered_map<size_t, Order_entry> order_lookup;
 
 };

@@ -48,13 +48,14 @@ int main ()
         book.add_order(std::move(ord));
     }
 
+    book.cancel_order(15);
 
-    for (auto& trade : book.get_trade_history())
-    {
-        std::string type;
-        ( trade.type > 0) ? type="sell" : type="buy";
-        std::cout << "Type: "<< type << " Price: "<< trade.price << " Size:"<< trade.size << std::endl;
-    }
+    // for (auto& trade : book.get_trade_history())
+    // {
+    //     std::string type;
+    //     ( trade.type > 0) ? type="sell" : type="buy";
+    //     std::cout << "Type: "<< type << " Price: "<< trade.price << " Size:"<< trade.size << std::endl;
+    // }
 
     return 0;
 }
