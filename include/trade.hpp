@@ -1,10 +1,11 @@
 #pragma once
 #include "order.hpp"
 #include <cstddef>
+#include <cstdint>
 
 struct Trade 
 {
-    size_t time;
+    uint64_t time;
     size_t size;
     long price;
     Order_type type;

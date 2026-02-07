@@ -8,6 +8,7 @@
 
 #include "order.hpp"
 #include "trade.hpp"
+#include "utils.hpp"
 
 
 class Order_book
@@ -58,12 +59,7 @@ class Order_book
 
         bool check_match(Order order)
         {
-            // Take our order depending on if its bid or ask, we find the lowest (or highest) opposite.
-            // Example:
-            // if order == bid && order.price >= asks.highest : execute()
-            // if order == ask && order.price >= asks.lowest : execute()
-            // And then deal with the sizes after .
-            int type = (order.type == 1) ? 0 : 1;
+           int type = (order.type == 1) ? 0 : 1;
             if (lookup[type]->empty()) return false;
             bool match = false;
             auto it = lookup[type]->begin();
@@ -78,17 +74,31 @@ class Order_book
             }
             return match;
         }
-        //Can now write this.
+
         void cancel_order (size_t ID)
         {
-            auto it = order_lookup[ID];
-            // Get the data
-            // Get what map its fromo (bid or asks)
-            // safely check if a list exists using the data we took out (price)
-            // erase the Order object from list using iterator.
-            // Check if price list is empty, if it is remove it.
-            //
-            // erase it from order_lookup 
+            auto lookup_it = order_lookup.find(ID);
+            if ( lookup_it == order_lookup.end())
+            {
+                return;
+            }
+
+            auto& it = lookup_it->second;
+
+            long price = it.location->price;
+            bool map = (it.is_buy) ? 0 : 1;
+
+            auto price_it = lookup[map]->find(price);
+            if ( price_it  != lookup[map]->end() )
+            {
+                price_it->second.erase(it.location);
+                if(price_it->second.empty())
+                {
+                    lookup[map]->erase(price_it);
+                }
+            }
+
+            order_lookup.erase(lookup_it);
         }
 
         std::vector<Trade> get_trade_history() { return this->trade_history; }
@@ -110,16 +120,18 @@ class Order_book
                 trade_price = book_order.price *-1;
             }
 
-            trade_history.emplace_back(101, trade_size, trade_price, order.type);
+            trade_history.emplace_back(cstime::get_timestamp(), trade_size, trade_price, order.type);
 
             if (book_order.size == 0)
             {
+                order_lookup.erase(book_order.ID);
                 lookup[type]->begin()->second.pop_front();
                 if (lookup[type]->begin()->second.empty())
                 {
                     lookup[type]->erase(lookup[type]->begin());
                 }
             }
+
         }
         struct Order_entry
         {

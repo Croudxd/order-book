@@ -27,35 +27,6 @@
 
 int main ()
 {
-    Order_book book;
-
-    std::vector<Order> test_orders;
-
-    std::srand(std::time(nullptr)); 
-
-    for (int i = 0; i < 100; ++i) 
-    {
-        Order_type type = (std::rand() % 2 == 0) ? Order_type::buy : Order_type::sell;
-        size_t price = 95 + (std::rand() % 11); 
-        size_t quantity = 1 + (std::rand() % 50);
-        size_t id = i + 1;
-        test_orders.emplace_back(type, price, quantity, id);
-    }
-
-
-    for (auto& ord : test_orders)
-    {
-        book.add_order(std::move(ord));
-    }
-
-    book.cancel_order(15);
-
-    // for (auto& trade : book.get_trade_history())
-    // {
-    //     std::string type;
-    //     ( trade.type > 0) ? type="sell" : type="buy";
-    //     std::cout << "Type: "<< type << " Price: "<< trade.price << " Size:"<< trade.size << std::endl;
-    // }
 
     return 0;
 }
