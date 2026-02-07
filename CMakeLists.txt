@@ -10,6 +10,7 @@ include_directories(include)
 
 add_executable(order-book src/main.cpp)
 add_executable(order-book-test test/test.cpp)
+add_executable(order-book-benchmark test/benchmark.cpp)
 
 
 #TEST:

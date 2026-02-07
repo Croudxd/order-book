@@ -15,8 +15,8 @@ class Order_book
     public:
         Order_book ()
         {
-            lookup[0] = &asks;
-            lookup[1] = &bids;
+            lookup[0] = &bids;
+            lookup[1] = &asks;
         }
 
         void add_order (Order order)
@@ -59,6 +59,7 @@ class Order_book
             // if order == ask && order.price >= asks.lowest : execute()
             // And then deal with the sizes after .
             int type = (order.type == 1) ? 0 : 1;
+            if (lookup[type]->empty()) return false;
             bool match = false;
             auto it = lookup[type]->begin();
 
@@ -70,7 +71,6 @@ class Order_book
             {
                 match = order.price*-1 >= it->first ;
             }
-            std::cout << match << " " <<order.ID << " " << order.price << " "<< it->first <<std::endl;
             return match;
         }
         void cancel_order () { }

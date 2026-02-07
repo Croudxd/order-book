@@ -42,14 +42,12 @@ int main ()
         test_orders.emplace_back(type, price, quantity, id);
     }
 
-    std::cout << "--- STARTING TRADING ENGINE ---" << std::endl;
 
     for (auto& ord : test_orders)
     {
         book.add_order(std::move(ord));
     }
 
-    std::cout << "\n--- END OF TRADING DAY ---" << std::endl;
 
     for (auto& trade : book.get_trade_history())
     {
