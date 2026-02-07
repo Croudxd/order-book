@@ -29,3 +29,8 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j
 ./order-book-benchmark
 ```
+
+## To Do
+-  [ ] : Implement cancel_order.
+-  [ ] : Implement a way to read from a rust program which will get data from bitifinex.
+- [ ] : Connect to my rust backtester.
