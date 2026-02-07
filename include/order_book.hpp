@@ -26,12 +26,29 @@ class Order_book
 
             if (matched == true)
             {
-                execute(std::move(order));
+                if (!lookup[(order.type == 1) ? 0 : 1]->empty() && !lookup[(order.type == 1) ? 0 : 1]->begin()->second.empty())
+                {
+
+                    while ( order.size > 0)
+                    {
+                        if (lookup[(order.type == 1) ? 0 : 1]->empty())
+                        {
+                            break;
+                        }
+                        if (!check_match(order))
+                        {
+                            break;
+                        }
+                        execute(order);
+                    }
+                }
+            }
+            if (order.size > 0)
+            {
+                auto [ it, inserted ] = lookup[order.type]->try_emplace(order.price);
+                it->second.push_back(std::move(order));
                 return;
             }
-            auto [ it, inserted ] = lookup[order.type]->try_emplace(order.price);
-            it->second.push_back(std::move(order));
-            return;
         }
 
         bool check_match(Order order)
@@ -41,63 +58,51 @@ class Order_book
             // if order == bid && order.price >= asks.highest : execute()
             // if order == ask && order.price >= asks.lowest : execute()
             // And then deal with the sizes after .
+            int type = (order.type == 1) ? 0 : 1;
             bool match = false;
-            auto it = lookup[(order.type == 1) ? 0 : 1]->begin();
+            auto it = lookup[type]->begin();
 
             if (order.type == Order_type::sell)
             {
-                match = order.price == it->first ;
+                match = order.price <= it->first*-1;
             }
             if (order.type == Order_type::buy)
             {
                 match = order.price*-1 >= it->first ;
             }
+            std::cout << match << " " <<order.ID << " " << order.price << " "<< it->first <<std::endl;
             return match;
         }
-
         void cancel_order () { }
 
         std::vector<Trade> get_trade_history() { return this->trade_history; }
 
     private:
-        void execute (Order order)
+        void execute (Order& order) 
         {
-            size_t s = order.size;
-            if (lookup[(order.type == 1) ? 0 : 1]->empty() )
-            {
-                return;
-            }
-            if (lookup[(order.type == 1) ? 0 : 1]->begin()->second.empty())
-            {
-                return;
-            }
-            size_t si = lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->size;
+            int type = (order.type == 1) ? 0 : 1;
+            Order& book_order = lookup[type]->begin()->second.front();
 
-            while (lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->size != 0 && order.size != 0)
-            {
-                lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->size--;
-                order.size--;
-            }
-            if (lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->size == 0 && order.size == 0)
-            {
+            long trade_size = (order.size < book_order.size) ? order.size : book_order.size;
+            long trade_price = book_order.price;
 
-                long price;
-                (order.type == 0) ? price  = order.price* -1 : price = order.price;
-                lookup[(order.type == 1) ? 0 : 1]->begin()->second.pop_front();
-                trade_history.emplace_back(101 /** add time here later*/,s, price, order.type);
-                return;
+            order.size -= trade_size;
+            book_order.size -= trade_size;
+
+            if (order.type == Order_type::sell)
+            {
+                trade_price = book_order.price *-1;
             }
-            if (lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->size == 0)
+
+            trade_history.emplace_back(101, trade_size, trade_price, order.type);
+
+            if (book_order.size == 0)
             {
-                long price;
-                (order.type == 0) ? price  = order.price* -1 : price = order.price;
-                lookup[(order.type == 1) ? 0 : 1]->begin()->second.pop_front();
-                trade_history.emplace_back(101 /** add time here later*/, si, price, lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->type);
-                add_order(order);
-            } if ( order.size == 0)
-            {
-                trade_history.emplace_back(101 /** add time here later*/, s, lookup[(order.type == 1) ? 0 : 1]->begin()->second.begin()->price, order.type);
-                return;
+                lookup[type]->begin()->second.pop_front();
+                if (lookup[type]->begin()->second.empty())
+                {
+                    lookup[type]->erase(lookup[type]->begin());
+                }
             }
         }
 
